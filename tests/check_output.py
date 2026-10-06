@@ -30,8 +30,17 @@ for i, r in enumerate(recipes, 1):
     check(f"Recipe {i}: numbered steps", len(re.findall(r"^\s+\d\.", r, re.M)) >= 3)
     check(f"Recipe {i}: zero-waste tip", "zero-waste tip" in rl)
     check(f"Recipe {i}: diet swaps", "swaps" in rl)
+    swaps = next((l for l in rl.splitlines() if "swaps" in l), "")
+    check(f"Recipe {i}: swaps answer vegetarian, gluten-free and dairy-free",
+          all(d in swaps for d in ["vegetarian", "gluten-free", "dairy-free"]))
+    check(f"Recipe {i}: allergens line", "allergens" in rl)
+    check(f"Recipe {i}: keeps line (leftovers)", "keeps" in rl)
 check("Staples labeled", "staples" in lower)
 check("Food-safety flag present", "food safety" in lower or "food-safety" in lower)
+check("Cook order line", "cook order" in lower)
+left = lower.find("what's left")
+check("What's left line, before the meals-saved line",
+      0 <= left < lower.find("ingredients rescued"))
 check("Meals-saved line", bool(re.search(r"ingredients rescued: \d+ \| meals made: \d+", lower)))
 check("Soft CTA to the app", "snap your own fridge in the chef anto app" in lower)
 check("Sign-off", "Chef Anto 🌿🤓❤️" in text)
