@@ -1,0 +1,22 @@
+name: Recipe Agent tests
+
+on: [push, pull_request]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Demo output (39 checks)
+        run: python3 tests/check_output.py demo/output.md
+      - name: Independent run (39 checks)
+        run: python3 tests/check_output.py demo/independent-run.md
+      - name: Unsafe-item test (39 + 6 checks)
+        run: |
+          python3 tests/check_output.py demo/unsafe-item-test.md
+          python3 tests/check_unsafe.py demo/unsafe-item-test.md salmon
+      - name: Refusal rule (6 checks x 3)
+        run: python3 tests/check_refusal.py demo/refusal-tests.md
