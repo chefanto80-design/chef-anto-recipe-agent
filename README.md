@@ -1,5 +1,7 @@
 # Chef Anto Recipe Agent 🥬
 
+![Tests](https://github.com/chefanto80-design/chef-anto-recipe-agent/actions/workflows/tests.yml/badge.svg)
+
 **Turns a fridge photo or an ingredient list into 3 zero-waste recipes, with at least one Balkan comfort dish.**
 Part of the [Chef Anto AI Agency](https://github.com/chefanto80-design/chef-anto-agent). Built by Chef Anto (Antoanela Alexander), Miami.
 *I am the heart. AI is the brain.*
@@ -24,6 +26,8 @@ Part of the [Chef Anto AI Agency](https://github.com/chefanto80-design/chef-anto
 | [`tests/check_unsafe.py`](tests/check_unsafe.py) | Unsafe-item checker (6 checks) |
 | [`demo/refusal-tests.md`](demo/refusal-tests.md) | Refusal-rule test runs, verbatim |
 | [`tests/check_refusal.py`](tests/check_refusal.py) | Refusal checker (6 checks per refusal) |
+| [`demo/independent-run.md`](demo/independent-run.md) | Independent run on a new fridge, verbatim |
+| [`.github/workflows/tests.yml`](.github/workflows/tests.yml) | Runs every checker automatically on each push |
 
 ## How to use
 **Claude app:** zip the `skill` folder renamed to `chef-anto-recipes`, upload it in Claude's Settings → Skills, then ask:
@@ -64,14 +68,19 @@ day-old bread. Give me 3 recipes.
 | 7 | `python3 tests/check_unsafe.py demo/unsafe-item-test.md salmon` | ✅ **6/6 passed** |
 | 8 | `python3 tests/check_output.py demo/unsafe-item-test.md` | ✅ **39/39 passed** |
 | 9 | Unsafe-item checker on the version 1 demo output, treating the chicken as unsafe | ✅ Caught it: **2/6 passed** |
+| 10 | Independent run, 2026-10-12: a fresh Claude context given only `skill/SKILL.md` and a new fridge (zucchini, carrots, eggs, yogurt, pepper spread, stale pita, 3-day-old pork) | ✅ Full answer produced, saved verbatim |
+| 11 | Old checker on the independent run | ❌ **16/18**: it found 0 recipes, because it only accepted `### Recipe` headings and `· 45 min` times. Checker bug, not an agent bug |
+| 12 | Fixed checkers (accept `##` or `###` headings, `**Time:** 40 min`, unindented steps), then reran every test above | ✅ Independent run **39/39**; demo, unsafe and refusal tests unchanged; version 1 still caught (**28/39**, **2/6**) |
+| 13 | GitHub Actions runs all checkers on every push | See the Tests badge at the top |
 
 The checker covers: 3 recipes, fridge sort, Balkan dish, a recipe under 20 min, time/servings/difficulty, numbered steps, zero-waste tip, all three diet swaps, allergens and a keeps line in every recipe, food-safety flag, cook order, what's left, meals-saved line, app CTA, sign-off, no hype or diet-promise words, no old app name.
 
-**Not tested yet:** the recipes have not been cooked or tasted; no photo input was used in this demo; the refusal rule has not been tested on a real photo with no food in it (typed input only). The checkers confirm each required line is present; ingredient amounts were checked by hand, not by script. The version 2 rules, checkers and test runs were all made in one Claude session on 2026-10-06, so no independent run exists yet.
+**Not tested yet:** the recipes have not been cooked or tasted; no photo input was used in this demo; the refusal rule has not been tested on a real photo with no food in it (typed input only). The checkers confirm each required line is present; ingredient amounts were checked by hand, not by script. One independent run exists (test 10); more runs on different fridges would make the results stronger.
 
 ## Run the tests
 ```bash
 python3 tests/check_output.py demo/output.md
+python3 tests/check_output.py demo/independent-run.md
 python3 tests/check_refusal.py demo/refusal-tests.md
 python3 tests/check_unsafe.py demo/unsafe-item-test.md salmon
 ```
