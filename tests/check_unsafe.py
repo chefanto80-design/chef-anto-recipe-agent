@@ -14,9 +14,10 @@ def main(path, item):
     m = re.search(r"```output\n(.*?)```", doc, re.S)
     text = m.group(1) if m else doc
     low, item = text.lower(), item.lower()
-    recipes = re.split(r"^### ", text, flags=re.M)[1:]
+    recipes = re.split(r"^#{2,3} Recipe\b", text, flags=re.M)[1:]
     dnu = low.find("do not use")
-    first_recipe = low.find("### ") if "### " in low else len(low)
+    m2 = re.search(r"^#{2,3} recipe\b", low, re.M)
+    first_recipe = m2.start() if m2 else len(low)
     section = low[dnu:first_recipe] if dnu >= 0 else ""
     cooked_in = [i for i, r in enumerate(recipes, 1)
                  if re.search(r"^\s*(\d+\.|- \*\*from the fridge)[^\n]*" + re.escape(item), r.lower(), re.M)]

@@ -15,19 +15,25 @@ def check(name, ok, detail=""):
     checks.append((name, ok, detail))
 
 
-recipes = re.split(r"^### ", text, flags=re.M)[1:]
+# Accept "## Recipe 1" or "### Recipe 1" headings (the skill does not fix a format).
+recipes = re.split(r"^#{2,3} Recipe\b", text, flags=re.M)[1:]
 check("Exactly 3 recipes", len(recipes) == 3, f"{len(recipes)} found")
 check("Fridge sorted into Use today / Use this week / Pantry",
       all(k in lower for k in ["use today", "use this week", "pantry"]))
 balkan = ["ciorb", "zacusc", "mămălig", "sarmale", "spanakopita", "tzatziki"]
 check("At least one Balkan dish", any(b in lower for b in balkan))
-times = [int(m) for m in re.findall(r"·\s*(\d+)\s*min", text)]
+# Time written as "· 45 min" or "**Time:** 45 min"; first one in each recipe.
+times = []
+for r in recipes:
+    m = re.search(r"(?:·|time:\**)\s*(\d+)\s*min", r, re.I)
+    if m:
+        times.append(int(m.group(1)))
 check("One fast option (under 20 min)", any(t < 20 for t in times), f"times: {times}")
 for i, r in enumerate(recipes, 1):
     rl = r.lower()
     check(f"Recipe {i}: time, servings, difficulty",
           "min" in rl and "serves" in rl and any(d in rl for d in ["easy", "medium", "hard"]))
-    check(f"Recipe {i}: numbered steps", len(re.findall(r"^\s+\d\.", r, re.M)) >= 3)
+    check(f"Recipe {i}: numbered steps", len(re.findall(r"^\s*\d+\.", r, re.M)) >= 3)
     check(f"Recipe {i}: zero-waste tip", "zero-waste tip" in rl)
     check(f"Recipe {i}: diet swaps", "swaps" in rl)
     swaps = next((l for l in rl.splitlines() if "swaps" in l), "")
